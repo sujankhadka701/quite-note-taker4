@@ -1,1 +1,1 @@
-# quick-note-taker2
+# QuickNotes

@@ -1,37 +1,249 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Quick Note Taker</title>
   <style>
+    :root {
+      --bg-color: #33eb0e;
+      --sidebar-bg: #ffffff;
+      --text-color: #333333;
+      --border-color: #e1e4e6;
+      --active-item: #eaf2f8;
+      --editor-bg: #ffffff;
+    }
+
+    body.dark-mode {
+      --bg-color: #080808;
+      --sidebar-bg: #cccce4;
+      --text-color: #d4d4d4;
+      --border-color: #3c3c3c;
+      --active-item: #6060e7;
+      --editor-bg: #1e1e1e;
+    }
+
     body {
-      font-family: system-ui;
-      padding: 20px;
-      background: #f4f4f4;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
-    textarea {
-      width: 95%;
-      height: 60vh;
-      font-size: 18px;
+
+    #app-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #sidebar {
+      width: 280px;
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
       padding: 15px;
+      border-bottom: 1px solid var(--border-color);
     }
-    button {
-      padding: 12px 30px;
-      font-size: 18px;
-      background: #316357;
-      color: white;
-      border: none;
+
+    #search-bar {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin-top: 10px;
+    }
+
+    #note-list {
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .note-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--border-color);
       cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .note-item:hover {
+      background-color: var(--active-item);
+    }
+
+    .note-item.active {
+      background-color: var(--active-item);
+      font-weight: bold;
+    }
+
+    .note-item .note-title-text {
+      font-size: 14px;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 80%;
+    }
+
+    .note-item .note-meta {
+      font-size: 11px;
+      color: #afe77a;
+    }
+
+    .note-item .pin-badge {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      font-size: 12px;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 10px;
+      border-radius: 3px;
+      background: #c3f156;
+      color: #28e667;
+      margin-right: 4px;
+    }
+
+    .note-item .delete-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 15px;
+      border: none;
+      background: #e74c3c;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      display: none;
+    }
+
+    .note-item:hover .delete-btn {
+      display: block;
+    }
+
+    #editor-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--editor-bg);
+    }
+
+    .toolbar {
+      padding: 10px 15px;
+      background-color: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select, input[type="text"] {
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: var(--active-item);
+    }
+
+    .meta-input-group {
+      padding: 10px 15px;
+      display: flex;
+      gap: 15px;
+      background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    #note-title-input {
+      flex: 2;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    #note-category-input {
+      flex: 1;
+    }
+
+    #editor-textarea {
+      flex: 1;
+      padding: 20px;
+      border: none;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+      background-color: var(--editor-bg);
+      color: var(--text-color);
+    }
+
+    .status-bar {
+      padding: 5px 15px;
+      background-color: var(--sidebar-bg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #ec3030;
     }
   </style>
 </head>
 <body>
-  <h2>Welcome to Quick Note Taker!</h2>
-  <h1>📝 Quick Note Taker</h1>
-  <textarea id="note" placeholder="Start typing your note..."></textarea>
-  <br><br>
-  <button id="save">💾 Save Note</button>
-   <div id="status" style="margin-top:10px; color:#666; font-size:0.9em;"></div>
+
+  <div id="app-container">
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <button id="new-note-btn" style="width: 100%; margin-bottom: 10px;">+ New Note</button>
+        <input type="text" id="search-bar" placeholder="Search notes content or titles...">
+      </div>
+      <ul id="note-list"></ul>
+    </div>
+
+    <div id="editor-panel">
+      <div class="toolbar">
+        <button id="save-btn">📁  Save</button>
+        <button id="save-as-btn">💾  Save As...</button>
+        <button id="open-file-btn">📂  Open External Text</button>
+        <button id="pin-btn">📌  Pin/Unpin Note</button>
+        <button id="font-dec-btn">A-</button>
+        <button id="font-inc-btn">A+</button>
+        <button id="dark-mode-toggle"> Dark Mode</button>
+      </div>
+
+      <div class="meta-input-group">
+        <input type="text" id="note-title-input" placeholder="Note Title...">
+        <input type="text" id="note-category-input" placeholder="Category (e.g. Work, Ideas)...">
+      </div>
+
+      <textarea id="editor-textarea" placeholder="Start typing your thoughts here..."></textarea>
+
+      <div class="status-bar">
+        <span id="save-status">No changes - already saved</span>
+        <span id="word-count">Words: 0 | Characters: 0</span>
+      </div>
+    </div>
+  </div>
+
   <script src="renderer.js"></script>
 </body>
 </html>

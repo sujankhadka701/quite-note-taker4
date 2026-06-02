@@ -5,10 +5,10 @@
   "scripts": {
     "start": "electron ."
   },
-  "devDependencies": {
-    "electron": "^40.8.2"
-  },
   "description": "",
+  "devDependencies": {
+    "electron": "^41.0.3"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
